@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM Simulator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Body Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ATM Container Styling */
+        .atm-container {
+            width: 380px;
+            background: #222;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            color: #fff;
+            position: relative;
+        }
+
+        /* ATM Card Slot */
+        .card-slot {
+            width: 60%;
+            height: 10px;
+            background: #444;
+            border-radius: 4px;
+            margin: 10px auto 20px auto;
+        }
+
+        /* ATM Screen Styling */
+        .atm-screen {
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 15px;
+            height: 100px;
+            color: #39FF14;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons */
+        .atm-button {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .btn-check-balance { background-color: #007bff; }
+        .btn-deposit { background-color: #28a745; }
+        .btn-withdraw { background-color: #ffc107; color: #333; }
+        .btn-exit { background-color: #dc3545; }
+        
+        /* Button Hover */
+        .atm-button:hover {
+            opacity: 0.9;
+        }
+
+        /* ATM Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        /* Keypad Buttons */
+        .keypad button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .keypad button:hover {
+            background-color: #666;
+        }
+
+        /* ATM Branding */
+        .atm-branding {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #ddd;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="atm-container">
+    <!-- ATM Branding -->
+    <div class="atm-branding">Virtual ATM</div>
+    
+    <!-- Card Slot -->
+    <div class="card-slot"></div>
+
+    <!-- ATM Screen -->
+    <div class="atm-screen" id="message">
+        Welcome! Choose an option:
+    </div>
+
+    <!-- ATM Buttons -->
+    <button class="btn btn-check-balance atm-button btn-block" onclick="checkBalance()">Check Balance</button>
+    <button class="btn btn-deposit atm-button btn-block" onclick="deposit()">Deposit</button>
+    <button class="btn btn-withdraw atm-button btn-block" onclick="withdraw()">Withdraw</button>
+    <button class="btn btn-exit atm-button btn-block" onclick="exit()">Exit</button>
+
+    <!-- Keypad -->
+    <div class="keypad">
+        <button onclick="inputNumber(1)">1</button>
+        <button onclick="inputNumber(2)">2</button>
+        <button onclick="inputNumber(3)">3</button>
+        <button onclick="inputNumber(4)">4</button>
+        <button onclick="inputNumber(5)">5</button>
+        <button onclick="inputNumber(6)">6</button>
+        <button onclick="inputNumber(7)">7</button>
+        <button onclick="inputNumber(8)">8</button>
+        <button onclick="inputNumber(9)">9</button>
+        <button onclick="clearInput()">Clear</button>
+        <button onclick="inputNumber(0)">0</button>
+        <button onclick="confirmInput()">Enter</button>
+    </div>
+</div>
+
+ <script>
+    let balance = 1000;
+let currentInput = "";
+let currentAction = null;
+
+function updateMessage(text) {
+    document.getElementById("message").innerText = text;
+}
+
+function checkBalance() {
+    updateMessage("Your balance is: $" + balance);
+    currentAction = null; // Reset the action
+}
+
+function deposit() {
+    currentInput = "";
+    currentAction = "deposit";
+    updateMessage("Enter deposit amount:");
+}
+
+function withdraw() {
+    currentInput = "";
+    currentAction = "withdraw";
+    updateMessage("Enter withdrawal amount:");
+}
+
+function exit() {
+    updateMessage("Thank you for using the ATM. Goodbye!");
+    currentAction = null; // Reset the action
+}
+
+function inputNumber(num) {
+    if (currentAction) { // Allow input only if an action is selected
+        currentInput += num;
+        updateMessage("Amount: $" + currentInput);
+    }
+}
+
+function clearInput() {
+    currentInput = "";
+    updateMessage("Amount: $0");
+}
+
+function confirmInput() {
+    let amount = parseFloat(currentInput);
+
+    if (currentAction === "deposit") {
+        if (amount > 0) {
+            balance += amount;
+            updateMessage("Deposited: $" + amount);
+        } else {
+            updateMessage("Invalid deposit amount");
+        }
+    } else if (currentAction === "withdraw") {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            updateMessage("Withdrawn: $" + amount);
+        } else {
+            updateMessage("Invalid amount or insufficient funds");
+        }
+    } else {
+        updateMessage("Select an action first.");
+    }
+
+    // Reset after action is confirmed
+    currentInput = "";
+    currentAction = null;
+}
+
+
+
+ </script>
+</body>
+</html>
