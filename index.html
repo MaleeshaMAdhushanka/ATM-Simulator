@@ -14,30 +14,33 @@
             height: 100vh;
             background-color: #333;
             font-family: Arial, sans-serif;
+            color: #fff;
         }
 
         /* ATM Container Styling */
         .atm-container {
-            width: 380px;
+            width: 400px;
             background: #222;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             padding: 20px;
-            color: #fff;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* ATM Card Slot */
-        .card-slot {
-            width: 60%;
-            height: 10px;
-            background: #444;
-            border-radius: 4px;
-            margin: 10px auto 20px auto;
+        /* ATM Branding */
+        .atm-branding {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ddd;
+            margin-bottom: 20px;
         }
 
         /* ATM Screen Styling */
         .atm-screen {
+            width: 100%;
             background: #0a0a0a;
             border-radius: 8px;
             padding: 15px;
@@ -52,32 +55,37 @@
             margin-bottom: 20px;
         }
 
-        /* Buttons */
+        /* ATM Buttons */
         .atm-button {
+            width: 100%;
             margin: 5px 0;
             font-weight: bold;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            transition: background 0.3s;
         }
+
         .btn-check-balance { background-color: #007bff; }
         .btn-deposit { background-color: #28a745; }
         .btn-withdraw { background-color: #ffc107; color: #333; }
         .btn-exit { background-color: #dc3545; }
         
-        /* Button Hover */
         .atm-button:hover {
             opacity: 0.9;
         }
 
-        /* ATM Keypad */
+        /* Keypad Styling */
         .keypad {
+            width: 100%;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             margin-top: 20px;
         }
 
-        /* Keypad Buttons */
         .keypad button {
-            width: 100%;
             padding: 15px;
             font-size: 1.2rem;
             background-color: #444;
@@ -91,16 +99,12 @@
             background-color: #666;
         }
 
-        /* ATM Branding */
-        .atm-branding {
-            position: absolute;
-            top: -20px;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            color: #ddd;
-            letter-spacing: 1px;
-            font-size: 1.2rem;
+        /* Language Selector */
+        .language-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -108,21 +112,16 @@
 
 <div class="atm-container">
     <!-- ATM Branding -->
-    <div class="atm-branding">Virtual ATM</div>
-    
-    <!-- Card Slot -->
-    <div class="card-slot"></div>
+    <div class="atm-branding" id="atmBranding">Virtual ATM</div>
 
     <!-- ATM Screen -->
-    <div class="atm-screen" id="message">
-        Welcome! Choose an option:
-    </div>
+    <div class="atm-screen" id="message">Welcome! Choose an option:</div>
 
-    <!-- ATM Buttons -->
-    <button class="btn btn-check-balance atm-button btn-block" onclick="checkBalance()">Check Balance</button>
-    <button class="btn btn-deposit atm-button btn-block" onclick="deposit()">Deposit</button>
-    <button class="btn btn-withdraw atm-button btn-block" onclick="withdraw()">Withdraw</button>
-    <button class="btn btn-exit atm-button btn-block" onclick="exit()">Exit</button>
+    <!-- ATM Action Buttons -->
+    <button class="btn btn-check-balance atm-button" id="checkBalance" onclick="checkBalance()">Check Balance</button>
+    <button class="btn btn-deposit atm-button" id="deposit" onclick="deposit()">Deposit</button>
+    <button class="btn btn-withdraw atm-button" id="withdraw" onclick="withdraw()">Withdraw</button>
+    <button class="btn btn-exit atm-button" id="exit" onclick="exit()">Exit</button>
 
     <!-- Keypad -->
     <div class="keypad">
@@ -139,79 +138,127 @@
         <button onclick="inputNumber(0)">0</button>
         <button onclick="confirmInput()">Enter</button>
     </div>
+
+    <!-- Language Selector -->
+    <div class="language-buttons">
+        <button class="btn btn-primary" onclick="setLanguage('en')">English</button>
+        <button class="btn btn-secondary" onclick="setLanguage('jp')">日本語</button>
+    </div>
 </div>
 
- <script>
+<script>
     let balance = 1000;
-let currentInput = "";
-let currentAction = null;
+    let currentInput = "";
+    let currentAction = null;
+    let language = 'en';
 
-function updateMessage(text) {
-    document.getElementById("message").innerText = text;
-}
-
-function checkBalance() {
-    updateMessage("Your balance is: $" + balance);
-    currentAction = null; // Reset the action
-}
-
-function deposit() {
-    currentInput = "";
-    currentAction = "deposit";
-    updateMessage("Enter deposit amount:");
-}
-
-function withdraw() {
-    currentInput = "";
-    currentAction = "withdraw";
-    updateMessage("Enter withdrawal amount:");
-}
-
-function exit() {
-    updateMessage("Thank you for using the ATM. Goodbye!");
-    currentAction = null; // Reset the action
-}
-
-function inputNumber(num) {
-    if (currentAction) { // Allow input only if an action is selected
-        currentInput += num;
-        updateMessage("Amount: $" + currentInput);
-    }
-}
-
-function clearInput() {
-    currentInput = "";
-    updateMessage("Amount: $0");
-}
-
-function confirmInput() {
-    let amount = parseFloat(currentInput);
-
-    if (currentAction === "deposit") {
-        if (amount > 0) {
-            balance += amount;
-            updateMessage("Deposited: $" + amount);
-        } else {
-            updateMessage("Invalid deposit amount");
+    const messages = {
+        en: {
+            welcome: "Welcome! Choose an option:",
+            balance: "Your balance is: $",
+            depositPrompt: "Enter deposit amount:",
+            withdrawPrompt: "Enter withdrawal amount:",
+            exitMessage: "Thank you for using the ATM. Goodbye!",
+            invalidAmount: "Invalid amount",
+            insufficientFunds: "Invalid amount or insufficient funds",
+            deposited: "Deposited: $",
+            withdrawn: "Withdrawn: $",
+            checkBalance: "Check Balance",
+            deposit: "Deposit",
+            withdraw: "Withdraw",
+            exit: "Exit"
+        },
+        jp: {
+            welcome: "ようこそ！オプションを選択してください:",
+            balance: "あなたの残高: $",
+            depositPrompt: "入金額を入力してください:",
+            withdrawPrompt: "引き出し額を入力してください:",
+            exitMessage: "ご利用ありがとうございました。さようなら！",
+            invalidAmount: "無効な金額",
+            insufficientFunds: "無効な金額または残高不足",
+            deposited: "入金しました: $",
+            withdrawn: "引き出されました: $",
+            checkBalance: "残高確認",
+            deposit: "入金",
+            withdraw: "引き出し",
+            exit: "終了"
         }
-    } else if (currentAction === "withdraw") {
-        if (amount > 0 && amount <= balance) {
-            balance -= amount;
-            updateMessage("Withdrawn: $" + amount);
-        } else {
-            updateMessage("Invalid amount or insufficient funds");
-        }
-    } else {
-        updateMessage("Select an action first.");
+    };
+
+    function setLanguage(lang) {
+        language = lang;
+        updateMessage(messages[language].welcome);
+        document.getElementById("atmBranding").innerText = language === 'en' ? "Virtual ATM" : "バーチャルATM";
+
+        // Update the action buttons text
+        document.getElementById("checkBalance").innerText = messages[language].checkBalance;
+        document.getElementById("deposit").innerText = messages[language].deposit;
+        document.getElementById("withdraw").innerText = messages[language].withdraw;
+        document.getElementById("exit").innerText = messages[language].exit;
     }
 
-    // Reset after action is confirmed
-    currentInput = "";
-    currentAction = null;
-}
+    function updateMessage(text) {
+        document.getElementById("message").innerText = text;
+    }
 
+    function checkBalance() {
+        updateMessage(messages[language].balance + balance);
+        currentAction = null;
+    }
 
+    function deposit() {
+        currentInput = "";
+        currentAction = "deposit";
+        updateMessage(messages[language].depositPrompt);
+    }
 
- </script>
+    function withdraw() {
+        currentInput = "";
+        currentAction = "withdraw";
+        updateMessage(messages[language].withdrawPrompt);
+    }
+
+    function exit() {
+        updateMessage(messages[language].exitMessage);
+        currentAction = null;
+    }
+
+    function inputNumber(num) {
+        if (currentAction) {
+            currentInput += num;
+            updateMessage((currentAction === "deposit" ? messages[language].depositPrompt : messages[language].withdrawPrompt) + " $" + currentInput);
+        }
+    }
+
+    function clearInput() {
+        currentInput = "";
+        updateMessage("Amount: $0");
+    }
+
+    function confirmInput() {
+        let amount = parseFloat(currentInput);
+
+        if (currentAction === "deposit") {
+            if (amount > 0) {
+                balance += amount;
+                updateMessage(messages[language].deposited + amount);
+            } else {
+                updateMessage(messages[language].invalidAmount);
+            }
+        } else if (currentAction === "withdraw") {
+            if (amount > 0 && amount <= balance) {
+                balance -= amount;
+                updateMessage(messages[language].withdrawn + amount);
+            } else {
+                updateMessage(messages[language].insufficientFunds);
+            }
+        } else {
+            updateMessage(messages[language].welcome);
+        }
+
+        currentInput = "";
+        currentAction = null;
+    }
+</script>
 </body>
 </html>
